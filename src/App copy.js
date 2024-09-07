@@ -9,10 +9,6 @@ function App() {
   const [newUser, setNewUser] = useState({ FirstName: '', LastName: '', EmailAddress: '' });
   const [editingUser, setEditingUser] = useState(null);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage]);
-
   const fetchUsers = async () => {
     try {
       const response = await axios.get(`http://localhost:3001/users?page=${currentPage}&perPage=10`);
@@ -22,6 +18,10 @@ function App() {
       console.error('Error fetching users:', error);
     }
   };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleInputChange = (e, setter) => {
     const { name, value } = e.target;
