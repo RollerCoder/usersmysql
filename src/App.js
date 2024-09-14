@@ -1,20 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 function App() {
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [newUser, setNewUser] = useState({ FirstName: '', LastName: '', EmailAddress: '' });
+  const [newUser, setNewUser] = useState({
+    FirstName: "",
+    LastName: "",
+    EmailAddress: "",
+  });
   const [editingUser, setEditingUser] = useState(null);
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/users?page=${currentPage}&perPage=10`);
+      const response = await axios.get(
+        `http://localhost:3001/users?page=${currentPage}&perPage=10`
+      );
       setUsers(response.data.users);
       setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     }
   };
 
@@ -24,17 +30,17 @@ function App() {
 
   const handleInputChange = (e, setter) => {
     const { name, value } = e.target;
-    setter(prev => ({ ...prev, [name]: value }));
+    setter((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3001/users', newUser);
-      setNewUser({ FirstName: '', LastName: '', EmailAddress: '' });
+      await axios.post("http://localhost:3001/users", newUser);
+      setNewUser({ FirstName: "", LastName: "", EmailAddress: "" });
       fetchUsers();
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error("Error creating user:", error);
     }
   };
 
@@ -70,14 +76,30 @@ function App() {
       </form>
       <h2>Users List</h2>
       <ul>
-        {users.map(user => (
-          <li key={user.id}>{user.FirstName} {user.LastName} - {user.EmailAddress}</li>
+        {users.map((user) => (
+          <li key={user.id}>
+            {user.FirstName} {user.LastName} - {user.EmailAddress}
+          </li>
         ))}
       </ul>
       <div>
-        <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>Previous</button>
-        <span>Page {currentPage} of {totalPages}</span>
-        <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>Next</button>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

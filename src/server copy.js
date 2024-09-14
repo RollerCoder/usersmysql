@@ -1,104 +1,84 @@
-// File: server.js
-const express = require('express');
-const mysql = require('mysql2');
-const cors = require('cors');
-const app = express();
-const port = 3001;
+const express = require("express");
+const mysql = require("mysql2");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+require("dotenv").config();
 
-app.use(cors());
-app.use(express.json());
+const app = express();
+const port = process.env.PORT || 3001;
+
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Allow requests from React app
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.use(bodyParser.json());
 
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'test',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 db.connect((err) => {
   if (err) {
-    console.error('Error connecting to the database:', err);
+    console.error("Error connecting to the database:", err);
     return;
   }
-  console.log('Connected to the database');
+  console.log("Connected to the MySQL database.");
 });
 
-// Create a new user
-app.post('/users', (req, res) => {
+app.post("/users", (req, res) => {
   const { FirstName, LastName, EmailAddress } = req.body;
-  const query = 'INSERT INTO users (FirstName, LastName, EmailAddress) VALUES (?, ?, ?)';
+  const query =
+    "INSERT INTO users (FirstName, LastName, EmailAddress) VALUES (?, ?, ?)";
   db.query(query, [FirstName, LastName, EmailAddress], (err, result) => {
     if (err) {
-      res.status(500).json({ error: err.message });
+      console.error("Error inserting user:", err);
+      res.status(500).json({ error: "Error inserting user" });
       return;
     }
-    res.status(201).json({ id: result.insertId, FirstName, LastName, EmailAddress });
+    res
+      .status(201)
+      .json({ message: "User created successfully", userId: result.insertId });
   });
 });
 
-// Read users with pagination
-app.get('/users', (req, res) => {
+app.get("/users", (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const perPage = parseInt(req.query.perPage) || 10;
   const offset = (page - 1) * perPage;
 
-  const query = 'SELECT * FROM users LIMIT ? OFFSET ?';
-  db.query(query, [perPage, offset], (err, results) => {
+  const countQuery = "SELECT COUNT(*) as total FROM users";
+  const dataQuery = "SELECT * FROM users LIMIT ? OFFSET ?";
+
+  db.query(countQuery, (err, countResult) => {
     if (err) {
-      res.status(500).json({ error: err.message });
+      console.error("Error counting users:", err);
+      res.status(500).send("Error fetching users");
       return;
     }
 
-    db.query('SELECT COUNT(*) AS count FROM users', (countErr, countResults) => {
-      if (countErr) {
-        res.status(500).json({ error: countErr.message });
+    const total = countResult[0].total;
+    const totalPages = Math.ceil(total / perPage);
+
+    db.query(dataQuery, [perPage, offset], (err, users) => {
+      if (err) {
+        console.error("Error fetching users:", err);
+        res.status(500).send("Error fetching users");
         return;
       }
-      const totalUsers = countResults[0].count;
-      const totalPages = Math.ceil(totalUsers / perPage);
 
       res.json({
-        users: results,
+        users,
         currentPage: page,
-        totalPages: totalPages,
-        totalUsers: totalUsers,
+        totalPages,
+        totalUsers: total,
       });
     });
-  });
-});
-
-// Update a user
-app.put('/users/:id', (req, res) => {
-  const { id } = req.params;
-  const { FirstName, LastName, EmailAddress } = req.body;
-  const query = 'UPDATE users SET FirstName = ?, LastName = ?, EmailAddress = ? WHERE id = ?';
-  db.query(query, [FirstName, LastName, EmailAddress, id], (err, result) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (result.affectedRows === 0) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-    res.json({ id, FirstName, LastName, EmailAddress });
-  });
-});
-
-// Delete a user
-app.delete('/users/:id', (req, res) => {
-  const { id } = req.params;
-  const query = 'DELETE FROM users WHERE id = ?';
-  db.query(query, [id], (err, result) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (result.affectedRows === 0) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-    res.json({ message: 'User deleted successfully' });
   });
 });
 
