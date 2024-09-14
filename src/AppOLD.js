@@ -11,8 +11,6 @@ function App() {
     EmailAddress: "",
   });
   const [editingUser, setEditingUser] = useState(null);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
 
   const fetchUsers = async () => {
     try {
@@ -21,23 +19,8 @@ function App() {
       );
       setUsers(response.data.users);
       setTotalPages(response.data.totalPages);
-      setError(null);
     } catch (error) {
       console.error("Error fetching users:", error);
-      if (error.response) {
-        console.error("Error data:", error.response.data);
-        console.error("Error status:", error.response.status);
-        console.error("Error headers:", error.response.headers);
-        setError(
-          `Failed to fetch users. Server responded with: ${error.response.data.error}`
-        );
-      } else if (error.request) {
-        console.error("Error request:", error.request);
-        setError("Failed to fetch users. No response received from server.");
-      } else {
-        console.error("Error message:", error.message);
-        setError(`Failed to fetch users. Error: ${error.message}`);
-      }
     }
   };
 
@@ -52,24 +35,18 @@ function App() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
     try {
       await axios.post("http://localhost:3001/users", newUser);
       setNewUser({ FirstName: "", LastName: "", EmailAddress: "" });
-      setSuccess("User created successfully!");
-      fetchUsers(); // Refresh the user list
+      fetchUsers();
     } catch (error) {
       console.error("Error creating user:", error);
-      setError("Failed to create user. Please try again.");
     }
   };
 
   return (
     <div>
       <h1>User Management</h1>
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      {success && <div style={{ color: "green" }}>{success}</div>}
       <form onSubmit={handleCreateUser}>
         <input
           type="text"

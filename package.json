@@ -5,11 +5,11 @@
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "7.21.11",
     "axios": "^1.7.7",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "mysql2": "^3.11.0",
+    "express": "^4.21.0",
+    "mysql2": "^3.11.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.10.0",
@@ -17,7 +17,9 @@
     "web-vitals": "^4.2.3"
   },
   "scripts": {
-    "start": "concurrently \"node server.js\" \"react-scripts start\"",
+    "start-server": "node server.js",
+    "start-client": "set PORT=3000 && react-scripts start",
+    "start": "concurrently \"npm run start-server\" \"npm run start-client\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

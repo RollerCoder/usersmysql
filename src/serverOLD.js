@@ -1,8 +1,8 @@
-const express = require('express');
-const mysql = require('mysql2');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mysql = require("mysql2");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -14,42 +14,43 @@ const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
 });
 
-db.connect(err => {
+db.connect((err) => {
   if (err) {
-    console.error('Error connecting to the database:', err);
+    console.error("Error connecting to the database:", err);
     return;
   }
-  console.log('Connected to the MySQL database.');
+  console.log("Connected to the MySQL database.");
 });
 
-app.post('/users', (req, res) => {
+app.post("/users", (req, res) => {
   const { FirstName, LastName, EmailAddress } = req.body;
-  const query = 'INSERT INTO users (FirstName, LastName, EmailAddress) VALUES (?, ?, ?)';
+  const query =
+    "INSERT INTO users (FirstName, LastName, EmailAddress) VALUES (?, ?, ?)";
   db.query(query, [FirstName, LastName, EmailAddress], (err, result) => {
     if (err) {
-      console.error('Error inserting user:', err);
-      res.status(500).send('Error inserting user');
+      console.error("Error inserting user:", err);
+      res.status(500).send("Error inserting user");
       return;
     }
-    res.status(201).send('User created successfully');
+    res.status(201).send("User created successfully");
   });
 });
 
-app.get('/users', (req, res) => {
+app.get("/users", (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const perPage = parseInt(req.query.perPage) || 10;
   const offset = (page - 1) * perPage;
 
-  const countQuery = 'SELECT COUNT(*) as total FROM users';
-  const dataQuery = 'SELECT * FROM users LIMIT ? OFFSET ?';
+  const countQuery = "SELECT COUNT(*) as total FROM users";
+  const dataQuery = "SELECT * FROM users LIMIT ? OFFSET ?";
 
   db.query(countQuery, (err, countResult) => {
     if (err) {
-      console.error('Error counting users:', err);
-      res.status(500).send('Error fetching users');
+      console.error("Error counting users:", err);
+      res.status(500).send("Error fetching users");
       return;
     }
 
@@ -58,8 +59,8 @@ app.get('/users', (req, res) => {
 
     db.query(dataQuery, [perPage, offset], (err, users) => {
       if (err) {
-        console.error('Error fetching users:', err);
-        res.status(500).send('Error fetching users');
+        console.error("Error fetching users:", err);
+        res.status(500).send("Error fetching users");
         return;
       }
 
@@ -67,7 +68,7 @@ app.get('/users', (req, res) => {
         users,
         currentPage: page,
         totalPages,
-        totalUsers: total
+        totalUsers: total,
       });
     });
   });
